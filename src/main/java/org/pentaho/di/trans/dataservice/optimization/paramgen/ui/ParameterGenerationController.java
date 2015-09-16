@@ -107,6 +107,7 @@ public class ParameterGenerationController extends AbstractController {
         model.updateParameterMap();
       }
 
+      model.mappingsUpdated();
       info( getString( PKG, "ParameterGenerationController.AutoGen.Title" ),
         getString( PKG, "ParameterGenerationController.AutoGen.Message", found.size() ) );
     } catch ( Exception e ) {

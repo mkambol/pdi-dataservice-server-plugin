@@ -129,6 +129,12 @@ public class ParameterGenerationModel extends XulEventSourceAdapter {
     firePropertyChanges( previous );
   }
 
+  public void mappingsUpdated() {
+    Map<String, Object> previous = snapshot();
+    resetMappings( getParameterGeneration() );
+    firePropertyChanges( previous );
+  }
+
   private Map<String, Object> snapshot() {
     Map<String, Object> map = Maps.newHashMap();
     map.put( "selectedParameter", getSelectedParameter() );

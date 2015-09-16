@@ -22,6 +22,7 @@
 
 package org.pentaho.di.trans.dataservice.optimization.paramgen.ui;
 
+import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -191,6 +192,8 @@ public class ParameterGenerationModelTest {
     verify( changeSupport ).firePropertyChange( "selectedStep", "firstStep", "secondStep" );
   }
 
+
+
   @Test
   public void testIsEnabled() throws Exception {
     createParameterGeneration( "parameter" ).setEnabled( false );
@@ -233,4 +236,18 @@ public class ParameterGenerationModelTest {
     assertThat( parameterGeneration.getFieldMappings().get( 1 ).getSourceFieldName(), is( "secondSource" ) );
     assertThat( parameterGeneration.getFieldMappings().get( 1 ).getTargetFieldName(), is( "secondTarget" ) );
   }
+
+  @Test
+  public void testMappingsUpdated() {
+    ParameterGeneration parameterGeneration = (ParameterGeneration) createParameterGeneration( "parameter" ).getType();
+    parameterGeneration.createFieldMapping( "source", "target" );
+    model.updateParameterMap();
+    model.setSelectedParameter( "parameter" );
+    parameterGeneration.getFieldMappings().retainAll(
+        Collections2.filter( parameterGeneration.getFieldMappings(), SourceTargetFields.IS_DEFINED ) );
+    assertThat( parameterGeneration.getFieldMappings(), hasSize( 1 ) );
+    model.mappingsUpdated();
+    assertThat( parameterGeneration.getFieldMappings(), hasSize( 11 ) );
+  }
+
 }
