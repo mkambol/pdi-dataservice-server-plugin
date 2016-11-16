@@ -407,7 +407,12 @@ public class DataServiceTestController extends AbstractXulEventHandler {
   protected DataServiceExecutor getNewDataServiceExecutor( boolean enableMetrics ) throws KettleException {
     try {
       resetVariablesAndParameters();
-      return new DataServiceExecutor.Builder( new SQL( model.getSql() ), dataService, context ).
+      // TODO = cleanup
+      SQL sql = SQL.builder()
+        .withSqlString( model.getSql() )
+        .build();
+
+      return new DataServiceExecutor.Builder( sql , dataService, context ).
         rowLimit( model.getMaxRows() ).
         logLevel( model.getLogLevel() ).
         enableMetrics( enableMetrics ).

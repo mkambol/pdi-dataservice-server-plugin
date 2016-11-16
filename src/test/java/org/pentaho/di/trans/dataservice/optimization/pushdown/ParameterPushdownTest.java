@@ -200,7 +200,7 @@ public class ParameterPushdownTest {
 
   private void query( String whereClause ) throws Exception {
     SQL sql = new SQL( SELECT + whereClause );
-    sql.parse( rowMeta );
+//    sql.parse( rowMeta );
     when( executor.getSql() ).thenReturn( sql );
   }
 

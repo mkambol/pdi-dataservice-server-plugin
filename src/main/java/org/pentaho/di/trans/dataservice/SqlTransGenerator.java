@@ -71,6 +71,7 @@ public class SqlTransGenerator {
   private int serviceLimit;
 
   public SqlTransGenerator( SQL sql, int rowLimit ) {
+
     this.sql = sql;
     this.rowLimit = rowLimit;
     this.serviceFields = sql.getRowMeta();
@@ -193,7 +194,7 @@ public class SqlTransGenerator {
     }
 
     // Limit the data from the limit keyword
-    if ( sql.getLimitClause() != null ) {
+    if ( sql.getLimitValues() != null ) {
       int limit = sql.getLimitValues().getLimit();
       int offset = sql.getLimitValues().getOffset();
       StepMeta limitStep = generateLimitStep( "Limit rows", offset, limit );

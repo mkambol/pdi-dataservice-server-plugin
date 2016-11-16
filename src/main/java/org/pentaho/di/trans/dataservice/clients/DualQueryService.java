@@ -73,18 +73,23 @@ public class DualQueryService implements Query.Service {
 
   @Override public Query prepareQuery( String sqlString, int maxRows, Map<String, String> parameters ) {
     SQL sql;
-    try {
-      sql = new SQL( sqlString );
-    } catch ( KettleSQLException e ) {
-      return null;
-    }
-
-    if ( sql.getServiceName() == null || sql.getServiceName().equals( DUMMY_TABLE_NAME ) ) {
-      // Support for SELECT 1 and SELECT 1 FROM dual
+    // TODO clean up
+    if ( sqlString.equals("SELECT *") ) {
       return new DualQuery();
     } else {
       return null;
     }
+
+//    sql = SQL.builder()
+//      .withSqlString( sqlString )
+//      .build();
+//
+//    if ( sql.getServiceName() == null || sql.getServiceName().equals( DUMMY_TABLE_NAME ) ) {
+//      // Support for SELECT 1 and SELECT 1 FROM dual
+//      return new DualQuery();
+//    } else {
+//      return null;
+//    }
   }
 
   private class DualQuery implements Query {

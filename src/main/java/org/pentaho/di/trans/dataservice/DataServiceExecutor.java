@@ -37,7 +37,11 @@ import org.pentaho.di.core.row.RowMeta;
 import org.pentaho.di.core.row.RowMetaInterface;
 import org.pentaho.di.core.row.ValueMetaAndData;
 import org.pentaho.di.core.row.ValueMetaInterface;
+import org.pentaho.di.core.sql.ParseHandler;
+import org.pentaho.di.core.sql.ParseHandlerImpl;
 import org.pentaho.di.core.sql.SQL;
+import org.pentaho.di.core.sql.SqlNodeToDSQueryConverterImpl;
+import org.pentaho.di.core.sql.SqlToDSQueryConverter;
 import org.pentaho.di.core.util.Utils;
 import org.pentaho.di.i18n.BaseMessages;
 import org.pentaho.di.trans.RowProducer;
@@ -74,6 +78,10 @@ public class DataServiceExecutor {
 
   private final DataServiceMeta service;
   private final SQL sql;
+
+  private SqlToDSQueryConverter sqlNodeToDSQueryConverter;
+  private ParseHandler parseHandler;
+
   private final Map<String, String> parameters;
   private final SqlTransGenerator sqlTransGenerator;
   private final ListMultimap<ExecutionPoint, Runnable> listenerMap;
@@ -86,12 +94,13 @@ public class DataServiceExecutor {
     serviceTrans = builder.serviceTrans;
     sqlTransGenerator = builder.sqlTransGenerator;
     genTrans = builder.genTrans;
-
+    sqlNodeToDSQueryConverter = builder.sqlNodeToDSQueryConverter;
     listenerMap = MultimapBuilder.enumKeys( ExecutionPoint.class ).linkedListValues().build();
+    parseHandler = this.parseHandler;
   }
 
   public static class Builder {
-    private final SQL sql;
+    private SQL sql;
     private final DataServiceMeta service;
     private final DataServiceContext context;
     private Trans serviceTrans;
@@ -100,6 +109,10 @@ public class DataServiceExecutor {
     private Map<String, String> parameters = Collections.emptyMap();
     private LogLevel logLevel;
     private SqlTransGenerator sqlTransGenerator;
+
+    private SqlToDSQueryConverter sqlNodeToDSQueryConverter;
+    private ParseHandler parseHandler;
+
 
     private boolean normalizeConditions = true;
     private boolean prepareExecution = true;
@@ -173,7 +186,14 @@ public class DataServiceExecutor {
     public DataServiceExecutor build() throws KettleException {
       RowMetaInterface serviceFields;
 
-      if ( sql.getServiceName() != null && !sql.getServiceName().equals( service.getName() ) ) {
+      // FIXME - inject
+      parseHandler = ParseHandlerImpl.instance();
+      sqlNodeToDSQueryConverter = new SqlNodeToDSQueryConverterImpl( parseHandler );
+
+      String sqlString =  sql.getSqlString();
+      String serviceName = parseHandler.getTableName( parseHandler.parse( sqlString) );
+
+      if ( serviceName != null && !serviceName.equalsIgnoreCase( service.getName() ) ) {
         throw new KettleException(
           BaseMessages.getString( PKG, "DataServiceExecutor.Error.TableNameAndDataServiceNameDifferent",
             sql.getServiceName(), service.getName() ) );
@@ -189,7 +209,8 @@ public class DataServiceExecutor {
       }
       ValueMetaResolver resolver = new ValueMetaResolver( serviceFields );
 
-      sql.parse( resolver.getRowMeta() );
+      //sql.parse( resolver.getRowMeta() );
+      sql = sqlNodeToDSQueryConverter.convert( sqlString, resolver.getRowMeta() );
 
       if ( normalizeConditions ) {
         if ( sql.getWhereCondition() != null && sql.getWhereCondition().getCondition() != null ) {

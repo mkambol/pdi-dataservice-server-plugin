@@ -53,7 +53,11 @@ public class ExecutorQueryService implements Query.Service {
   }
 
   @Override public Query prepareQuery( String sqlString, int maxRows, Map<String, String> parameters ) throws KettleException {
-    SQL sql = new SQL( sqlString );
+    SQL sql = SQL.builder()
+      .withSqlString( sqlString )
+      .withServiceName( "lorem2" )
+      .build();
+
     Query query;
     try {
       IMetaStore metaStore = metastoreLocator != null ? metastoreLocator.getMetastore() : null;
